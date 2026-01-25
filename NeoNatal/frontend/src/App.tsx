@@ -2,6 +2,8 @@ import React, * as react from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Brain, Thermometer, AlertCircle, Clock } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+
 // ============================================
 // DATA STRUCTURE - Ready for API Integration
 // ============================================
@@ -135,7 +137,7 @@ function App() {
   react.useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:5000/api/dashboard');
+        const response = await fetch(`${API_BASE_URL}/api/dashboard`);
         if (!response.ok) throw new Error('Failed to fetch');
         const dashboardData = await response.json();
         setData(dashboardData);
@@ -852,7 +854,7 @@ function CameraMonitor({ motionData }: { motionData: any }) {
                     const formData = new FormData();
                     formData.append('file', blob, 'frame.jpg');
 
-                    fetch('http://127.0.0.1:5000/api/process_frame', {
+                    fetch(`${API_BASE_URL}/api/process_frame`, {
                       method: 'POST',
                       body: formData
                     }).catch(e => console.error("Upload error", e));
