@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+opencv-python-headless
+numpy
+python-multipart
+librosa
+scipy
+hypothesis
+pytest
+sounddevice
+scikit-learn
+psutil
+# Note: tensorflow and tensorflow-hub require Python 3.9-3.12
+# For Python 3.14, these need to be installed separately or use a compatible Python version
+# tensorflow
+# tensorflow-hub

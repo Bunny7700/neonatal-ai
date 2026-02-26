@@ -1,0 +1,28 @@
+# Requirements for Python 3.11/3.12
+# Real ML-based Cry Detection
+
+# Core audio processing
+numpy==1.24.3
+librosa==0.10.1
+scipy==1.11.4
+soundfile==0.12.1
+audioread==3.0.1
+
+# Audio feature extraction dependencies
+numba==0.58.1
+llvmlite==0.41.1
+joblib==1.3.2
+decorator==5.1.1
+resampy==0.4.2
+lazy-loader==0.3
+msgpack==1.0.7
+soxr==0.3.7
+
+# ML libraries (optional, for model training)
+# tensorflow==2.15.0
+# scikit-learn==1.3.2
+# matplotlib==3.8.2
+
+# Visualization (optional)
+# plotly==5.18.0
+# seaborn==0.13.0

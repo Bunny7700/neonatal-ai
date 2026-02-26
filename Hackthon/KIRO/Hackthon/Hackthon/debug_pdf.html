@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Export Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px 0; font-size: 16px; cursor: pointer; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-left: 3px solid #333; }
+        .error { border-left-color: #f44; color: #f44; }
+        .success { border-left-color: #4f4; color: #4f4; }
+        pre { background: #eee; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>PDF Export Debug Tool</h1>
+    
+    <h2>Step 1: Simulate Detection</h2>
+    <button onclick="simulateDetection()">Simulate Cry Detection</button>
+    <div id="detectionLog"></div>
+    
+    <h2>Step 2: Export PDF</h2>
+    <button onclick="exportPDF()" id="exportBtn" disabled>Export PDF</button>
+    <div id="exportLog"></div>
+    
+    <h2>Console Logs</h2>
+    <div id="consoleLogs"></div>
+    
+    <script>
+        let currentDetectionData = null;
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+        
+        function log(message, type = 'log') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            document.getElementById('consoleLogs').prepend(div);
+            console.log(message);
+        }
+        
+        function simulateDetection() {
+            log('Simulating cry detection...', 'log');
+            
+            // Simulate what the backend returns
+            const apiResponse = {
+                isCrying: true,
+                cryType: 'hunger',  // lowercase from backend
+                confidence: 85.5,
+                intensity: 65,
+                timestamp: Date.now() / 1000,
+                features: {
+                    pitch: 425.3,
+                    pitch_std: 32.1,
+                    intensity: 0.045,  // RMS value
+                    spectral_centroid: 1850.2,
+                    zero_crossing_rate: 0.08
+                }
+            };
+            
+            log('API Response:', 'log');
+            document.getElementById('detectionLog').innerHTML = '<pre>' + JSON.stringify(apiResponse, null, 2) + '</pre>';
+            
+            // Store detection data (same as app.js)
+            currentDetectionData = {
+                cryType: apiResponse.cryType || 'unknown',
+                confidence: apiResponse.confidence || 0,
+                intensity: apiResponse.intensity || 0,
+                timestamp: apiResponse.timestamp || Date.now() / 1000,
+                features: {
+                    pitch: apiResponse.features?.pitch || 0,
+                    pitch_std: apiResponse.features?.pitch_std || 0,
+                    intensity: apiResponse.features?.intensity || 0,
+                    intensity_db: apiResponse.features?.intensity_db || 0,
+                    spectral_centroid: apiResponse.features?.spectral_centroid || 0,
+                    zero_crossing_rate: apiResponse.features?.zero_crossing_rate || 0,
+                    duration: apiResponse.features?.duration || 2.5
+                }
+            };
+            
+            log('Stored detection data:', 'success');
+            console.log(currentDetectionData);
+            
+            document.getElementById('exportBtn').disabled = false;
+            log('Export button enabled', 'success');
+        }
+        
+        function collectCurrentDetectionData() {
+            if (!currentDetectionData) {
+                log('ERROR: No detection data available', 'error');
+                return null;
+            }
+            
+            log('Collecting detection data...', 'log');
+            
+            const cryType = currentDetectionData.cryType || 'unknown';
+            
+            // Convert RMS to dB
+            let intensityDb = currentDetectionData.features?.intensity_db || 0;
+            if (intensityDb === 0 && currentDetectionData.features?.intensity) {
+                const rms = currentDetectionData.features.intensity;
+                intensityDb = rms > 0 ? 20 * Math.log10(rms) : -60;
+                log(`Converted RMS ${rms} to dB ${intensityDb.toFixed(2)}`, 'log');
+            }
+            
+            const reportData = {
+                cry_type: cryType,
+                confidence: currentDetectionData.confidence || 0,
+                intensity: currentDetectionData.intensity || 0,
+                timestamp: currentDetectionData.timestamp || Date.now() / 1000,
+                features: {
+                    pitch: currentDetectionData.features?.pitch || 0,
+                    pitch_std: currentDetectionData.features?.pitch_std || 0,
+                    intensity_db: intensityDb,
+                    spectral_centroid: currentDetectionData.features?.spectral_centroid || 0,
+                    zero_crossing_rate: currentDetectionData.features?.zero_crossing_rate || 0,
+                    duration: currentDetectionData.features?.duration || 2.5
+                }
+            };
+            
+            log('Report data prepared:', 'success');
+            console.log(reportData);
+            return reportData;
+        }
+        
+        async function exportPDF() {
+            const exportBtn = document.getElementById('exportBtn');
+            const exportLog = document.getElementById('exportLog');
+            
+            exportBtn.disabled = true;
+            exportBtn.textContent = '⏳ Generating...';
+            exportLog.innerHTML = '';
+            
+            try {
+                log('Starting PDF export...', 'log');
+                
+                const reportData = collectCurrentDetectionData();
+                if (!reportData) {
+                    throw new Error('No detection data');
+                }
+                
+                exportLog.innerHTML = '<h3>Request Data:</h3><pre>' + JSON.stringify(reportData, null, 2) + '</pre>';
+                
+                log('Sending request to /api/generate_report...', 'log');
+                
+                const response = await fetch(`${API_BASE_URL}/api/generate_report`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reportData),
+                    signal: AbortSignal.timeout(30000)
+                });
+                
+                log(`Response status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    let errorMsg = 'PDF generation failed';
+                    try {
+                        const error = await response.json();
+                        errorMsg = error.error || errorMsg;
+                        log(`Server error: ${errorMsg}`, 'error');
+                    } catch (e) {
+                        errorMsg = `${errorMsg} (${response.status})`;
+                    }
+                    throw new Error(errorMsg);
+                }
+                
+                const blob = await response.blob();
+                log(`Received PDF: ${blob.size} bytes`, 'success');
+                
+                // Download
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `debug_report_${Date.now()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                log('PDF downloaded successfully!', 'success');
+                exportLog.innerHTML += '<h3 style="color: green;">✅ Success! PDF downloaded</h3>';
+                
+                exportBtn.textContent = 'Export PDF';
+                exportBtn.disabled = false;
+                
+            } catch (error) {
+                log(`ERROR: ${error.message}`, 'error');
+                exportLog.innerHTML += '<h3 style="color: red;">❌ Error: ' + error.message + '</h3>';
+                exportBtn.textContent = 'Export PDF';
+                exportBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

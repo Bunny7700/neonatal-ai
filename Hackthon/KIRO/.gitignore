@@ -1,0 +1,52 @@
+# Python virtual environments
+venv/
+venv312/
+env/
+.env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+*.pyd
+
+# pytest cache
+.pytest_cache/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Logs and temp files
+*.log
+privacy_audit.log
+git_status.txt
+
+# Test reports
+test_report.pdf
+
+# Node.js (frontend)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+*.suo
+*.user
+
+# Environment variables
+.env
+*.env
+
+# Model weights (large binary files)
+*.h5
+*.pkl
+*.pt
+*.pth
+*.onnx
