@@ -3,3 +3,7 @@ uvicorn
 opencv-python-headless
 numpy
 python-multipart
+tensorflow
+tensorflow-hub
+sounddevice
+pyaudio

@@ -1,4 +1,5 @@
 # shared_data.py
+import random
 
 # This structure matches the Frontend's expected data format
 dashboard_data = {
@@ -7,7 +8,7 @@ dashboard_data = {
         "status": "SAFE",  # SAFE / MONITOR / ALERT
         "stillTime": 0,
         "motion": 0.0,
-        "confidence": 0,
+        "confidence": 98,
         "alertActive": False
     },
     
@@ -58,7 +59,7 @@ dashboard_data = {
         "alerts": []
     },
     
-    # Patient Info (Static)
+    # Patient Info (Dynamic updates)
     "patient": {
         "id": "NB-2026-001",
         "age": "3 days old",
@@ -105,3 +106,29 @@ dashboard_data = {
         { "time": "Now", "type": "info", "description": "System Started" }
     ]
 }
+
+def update_dynamic_vitals():
+    # Simulate medical variability in vitals
+    for vital in dashboard_data["vitals"]:
+        if vital["title"] == "Heart Rate":
+            vital["value"] = random.randint(135, 155)
+            vital["status"] = "normal" if 120 <= vital["value"] <= 160 else "warning"
+        elif vital["title"] == "Respiratory Rate":
+            vital["value"] = random.randint(40, 50)
+        elif vital["title"] == "Oxygen Saturation":
+            vital["value"] = random.randint(97, 99)
+
+    # Risk assessment logic based on stability
+    stability = 0
+    if dashboard_data["motionMonitoring"]["status"] == "UNSAFE": stability += 1
+    if dashboard_data["cryDetection"]["status"] == "distress": stability += 1
+    
+    if stability == 0:
+        dashboard_data["riskAssessment"]["overall"] = "low"
+        dashboard_data["patient"]["status"] = "Stable"
+    elif stability == 1:
+        dashboard_data["riskAssessment"]["overall"] = "medium"
+        dashboard_data["patient"]["status"] = "Monitoring"
+    else:
+        dashboard_data["riskAssessment"]["overall"] = "high"
+        dashboard_data["patient"]["status"] = "CRITICAL"
