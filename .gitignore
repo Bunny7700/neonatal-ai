@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+Hackthon/audio_log.txt
+Hackthon/crash_log.txt
+Hackthon/crash_log_utf8-2.txt
+Hackthon/crash_log_utf8.txt
+Hackthon/log2.txt
+Hackthon/training_report.txt
+
+# Temporary files
+temp.py
+*.tmp
+raw_links.txt
+url.txt
