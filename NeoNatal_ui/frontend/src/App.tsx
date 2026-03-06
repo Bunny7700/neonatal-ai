@@ -43,11 +43,22 @@ function App() {
         setIsOnline(true);
 
         setHistory(prev => {
-          // Use 'motion' for the visual graph as it shows the real-time 'pattern'
-          // much better than a static BPM number.
-          const breathing = json.motionMonitoring?.motion || 0;
+          // Automatic Gain Control (AGC) to ensure raw breathing movement is always dynamically visible
+          const rawMotion = json.motionMonitoring?.motion || 0;
+
+          // Calculate recent min/max to automatically scale the waveform (AGC)
+          const recentMotions = prev.slice(-30).map(p => p.rawBreathing || 0);
+          const minMotion = Math.min(...recentMotions, rawMotion) || 0;
+          let maxMotion = Math.max(...recentMotions, rawMotion) || 1;
+          if (maxMotion - minMotion < 1) maxMotion = minMotion + 1; // Prevent div by zero
+
+          // Normalize to a 0-100 scale dynamically
+          const normalizedBreathing = ((rawMotion - minMotion) / (maxMotion - minMotion)) * 80 + 10;
+
+          const breathing = json.motionMonitoring?.breathingStatus === "BREATHING PAUSE" ? 0 : normalizedBreathing;
           const stillness = json.motionMonitoring?.stillTime || 0;
-          const newEntry = { time: prev.length, breathing, stillness };
+
+          const newEntry = { time: prev.length, breathing, stillness, rawBreathing: rawMotion };
           return [...prev.slice(-44), newEntry];
         });
       } catch (err) {
@@ -153,7 +164,7 @@ function PrintablePatientReport({ data, mm, face, lab, spo2, temp, alerts }: any
   return (
     <div className="print-only" style={{ padding: '20px', fontFamily: 'sans-serif', background: 'white', color: 'black' }}>
       <div style={{ borderBottom: '2px solid black', paddingBottom: '10px', marginBottom: '20px', textAlign: 'center' }}>
-        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 900, textTransform: 'uppercase' }}>NEOGUARD SURVIVAL ENGINE</h1>
+        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 900, textTransform: 'uppercase' }}>AKESIO SURVIVAL ENGINE</h1>
         <h2 style={{ margin: '4px 0 0 0', fontSize: '18px', fontWeight: 600 }}>OFFICIAL CLINICAL PATIENT REPORT</h2>
         <p style={{ margin: '4px 0 0 0', fontSize: '12px' }}>Generated: {new Date().toLocaleString()}</p>
       </div>
@@ -234,7 +245,7 @@ function PrintablePatientReport({ data, mm, face, lab, spo2, temp, alerts }: any
 
       <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px dotted #ccc', display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#666' }}>
         <span>Authorized By: _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
-        <span>NeoGuard AI Clinical Engine v2.0 - Page 1 of 1</span>
+        <span>Akesio AI Clinical Engine v2.0 - Page 1 of 1</span>
       </div>
     </div>
   );
@@ -274,7 +285,7 @@ function DoctorView({
             <Activity size={24} strokeWidth={3} />
           </div>
           <div>
-            <div className="sidebar-brand-text">NEOGUARD</div>
+            <div className="sidebar-brand-text">AKESIO</div>
             <div style={{ fontWeight: 800, fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '1.5px' }}>AI-DRIVEN PREDICTIVE CARE</div>
           </div>
 
@@ -775,7 +786,7 @@ function ParentView({ data, risk, mm, face, alerts, isOnline, isCameraEnabled, o
             <Baby size={24} />
           </div>
           <div>
-            <div style={{ fontWeight: 900, fontSize: '18px', letterSpacing: '-0.5px' }}>NeoGuard <span style={{ color: 'var(--primary)', fontSize: '12px' }}>Parent</span></div>
+            <div style={{ fontWeight: 900, fontSize: '18px', letterSpacing: '-0.5px' }}>Akesio <span style={{ color: 'var(--primary)', fontSize: '12px' }}>Parent</span></div>
             <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 800 }}>STATION B • INFANT #0821-A</div>
           </div>
         </div>
@@ -1196,7 +1207,7 @@ function AuthFlow({ onLogin }: any) {
           }}>
             <Shield size={32} />
           </div>
-          <h1 className="auth-title">NEOGUARD</h1>
+          <h1 className="auth-title">AKESIO</h1>
           <p className="auth-subtitle">AI-Driven Predictive Neonatal Monitoring</p>
           <p className="auth-description">Non-Contact Multi-Parameter Survival Engine</p>
         </div>
@@ -1331,7 +1342,7 @@ function AuthFlow({ onLogin }: any) {
       </div>
 
       <div className="auth-footer">
-        FOR AUTHORIZED CLINICAL PERSONNEL ONLY • NEOGUARD SURVIVAL ENGINE v2.0.1
+        FOR AUTHORIZED CLINICAL PERSONNEL ONLY • AKESIO SURVIVAL ENGINE v2.0.1
       </div>
 
       <style>{`

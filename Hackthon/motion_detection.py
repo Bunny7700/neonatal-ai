@@ -110,30 +110,53 @@ class MotionDetector:
             return None
 
     def _analyze_rhythm(self):
-        if len(self.motion_history) < 60: return
+        if len(self.motion_history) < 10: return # Reduced threshold to 10 for prototype demo
         
         data = np.array(self.motion_history)
-        mean_val = np.mean(data)
-        std_val = np.std(data)
+        
+        # 1. Signal Smoothing (Low-pass filter to remove micro-jitter)
+        # Using a moving average convolution to simulate a smooth respiratory wave
+        window_size = 5
+        smoothed = np.convolve(data, np.ones(window_size)/window_size, mode='valid')
+        
+        mean_val = np.mean(smoothed)
+        std_val = np.std(smoothed)
         
         # Peak Detection over Optical Flow magnitude
         peaks = 0
-        threshold = mean_val + (0.3 * std_val) # More sensitive threshold
+        threshold = mean_val + (0.1 * std_val) # Adjusted threshold for smoothed data
         
-        if std_val > 0.005: # Detect micro-variations (chest movement)
-
-            for i in range(2, len(data) - 2):
-                if data[i] > data[i-1] and data[i] > data[i+1] and data[i] > threshold:
-                    peaks += 1
+        if std_val > 0.002: # Detect macro-variations (chest movement)
+            last_peak_idx = -10
+            for i in range(1, len(smoothed) - 1):
+                if smoothed[i] > smoothed[i-1] and smoothed[i] > smoothed[i+1] and smoothed[i] > threshold:
+                    # 2. Peak Debouncing: Prevent double-counting a single breath cycle
+                    # At 3Hz, 3 frames = ~1 second (Max neonatal HR is ~60BPM)
+                    if (i - last_peak_idx) >= 3:
+                        peaks += 1
+                        last_peak_idx = i
         
         # Calculate BPM
-        # At 3Hz (333ms), window duration is len(data) * 0.33
+        # At 3Hz (333ms), window duration is len(smoothed) * 0.33
         interval = 0.33
-        window_duration_seconds = len(data) * interval
-        self.breathing_rate = int((peaks / window_duration_seconds) * 60)
+        window_duration_seconds = len(smoothed) * interval
+        
+        # KEY CLINICAL FIX: Optical flow magnitude measures speed of movement.
+        # One complete breath cycle (inhale -> pause -> exhale -> pause) creates TWO peaks in movement speed.
+        # Therefore, we divide the raw peaks by 2 to get the actual breathing rhythm.
+        actual_breaths = peaks / 2 
+        raw_bpm = (actual_breaths / window_duration_seconds) * 60
+        
+        # 3. Output Stabilization
+        if not hasattr(self, 'stable_bpm'):
+            self.stable_bpm = raw_bpm
+        else:
+            self.stable_bpm = (0.2 * raw_bpm) + (0.8 * self.stable_bpm) # EMA smoothing
+            
+        self.breathing_rate = int(self.stable_bpm)
         
         # SENSE CHECK: If motion is extremely low, breathing is likely ABSENT
-        if std_val < 0.003: self.breathing_rate = 0
+        if std_val <= 0.002: self.breathing_rate = 0
 
         
         # Clinical status logic
