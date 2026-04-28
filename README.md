@@ -1,136 +1,97 @@
-# 👶 Neonatal AI Monitoring System
+👶 Neonatal AI Monitoring System
+A real-time AI-powered predictive neonatal monitoring system that detects breathing patterns, identifies early distress, and provides live NICU access for parents.
 
-A real-time AI-powered baby monitoring system that detects breathing movements and alerts caregivers when no movement is detected for 10 seconds.
+🌟 Features
+Real-Time Breathing Detection (camera-based, non-contact)
 
-## 🌟 Features
+Early Warning System for neonatal distress
 
-- **Real-Time Motion Detection**: Detects subtle breathing movements using OpenCV
-- **Breathing Monitoring**: Alerts when no breathing movement detected for 10+ seconds
-- **Live Camera Feed**: Side-by-side view of camera and monitoring dashboard
-- **Audio & Visual Alerts**: Beeping alarm and red flashing overlay for critical alerts
-- **Professional Dashboard**: Real-time statistics and monitoring metrics
+Predictive Monitoring using AI models
 
-## 🚀 Quick Start
+Live NICU Streaming for Parents 👨‍👩‍👧
 
-### Backend (Python FastAPI)
+Baby Status Updates (feeding, sleeping, care activity)
 
-```bash
-cd Hackthon
-python main.py
-```
+Doctor Dashboard with alerts & risk levels
 
-Backend runs on: `http://127.0.0.1:5000`
+Audio + Visual Emergency Alerts
 
-### Frontend (React + Vite)
+🤖 AI Models & Technologies Used
+Google Gemini
+→ System logic, reasoning, and intelligent workflow design
 
-```bash
-cd NeoNatal/frontend
-npm install
-npm run dev
-```
+TensorFlow (Google)
+→ Predictive model for neonatal risk detection
 
-Frontend runs on: `http://localhost:5173`
+MediaPipe (Google)
+→ Real-time motion tracking for breathing detection
 
-## 📊 Detection Thresholds
+OpenCV (cv2)
+→ Frame processing & motion detection
 
-- **SAFE**: 0-3 seconds of stillness 🟢
-- **MONITOR**: 3-10 seconds of stillness 🟡
-- **UNSAFE/ALERT**: 10+ seconds (no breathing detected) 🔴
+🧠 System Architecture (Updated Flow)
+Camera Capture (NICU crib monitoring)
 
-## 🛠️ Tech Stack
+Video Processing (face + chest detection)
 
-### Backend
-- Python 3.x
-- FastAPI
-- OpenCV (cv2)
-- NumPy
-- Uvicorn
+AI Analysis
 
-### Frontend
-- React 18
-- TypeScript
-- Vite
-- Recharts (data visualization)
-- Lucide React (icons)
+Breathing pattern detection
 
-## 📁 Project Structure
+Skin color (cyanosis) detection
 
-```
-PROTOTYPE/
-├── Hackthon/                 # Backend
-│   ├── main.py              # FastAPI server
-│   ├── motion_detection.py  # Motion detection logic
-│   └── shared_data.py       # Dashboard data structure
-├── NeoNatal/
-│   └── frontend/            # Frontend
-│       ├── src/
-│       │   ├── App.tsx      # Main application
-│       │   └── App.css      # Styles
-│       └── package.json
-└── README.md
-```
+Predictive risk scoring
 
-## 🎯 How It Works
+Decision Engine
 
-1. **Camera Capture**: Frontend captures video frames at 2 FPS
-2. **Frame Processing**: Frames sent to backend for motion analysis
-3. **Motion Detection**: OpenCV calculates pixel differences between frames
-4. **Breathing Detection**: Motion > 50k indicates breathing/movement
-5. **Alert System**: If motion < 50k for 10 seconds → Critical alert
+Normal / Warning / Critical
 
-## 🔧 Configuration
+Output
 
-### Adjust Detection Sensitivity
+Doctor Dashboard (alerts + vitals)
 
-Edit `Hackthon/motion_detection.py`:
+Parent Interface (live stream + baby updates)
 
-```python
-# Line 54: Motion threshold for breathing detection
-if motion > 50000:  # Adjust this value
-    self.last_movement_time = time.time()
+🚀 Key Innovation (NEW 🔥)
+Non-contact monitoring (no sensors attached to baby)
 
-# Line 59-65: Alert timing thresholds
-if still_time < 3:
-    status = "SAFE"
-elif still_time < 10:  # Adjust warning threshold
-    status = "MONITOR"
-else:
-    status = "UNSAFE"  # Triggers alert
-```
+Predictive + not just reactive system
 
-## 📝 API Endpoints
+Dual Interface: Doctor + Parent ecosystem
 
-- `GET /api/dashboard` - Get all monitoring data
-- `POST /api/process_frame` - Send video frame for processing
-- `GET /` - API status and endpoints list
+Emotional + clinical impact combined
 
-## 🎨 Features Implemented
+📊 Detection Logic
+Motion detected → Normal breathing
 
-✅ Real-time motion detection  
-✅ Breathing movement detection  
-✅ Side-by-side camera and dashboard layout  
-✅ Audio alarm system  
-✅ Visual alert overlays  
-✅ Responsive design  
-✅ Live statistics display  
+No motion > 10 sec → Critical alert
 
-## 🚨 Important Notes
+Pattern irregularity → Early warning
 
-- **Camera Access**: Must use `http://localhost` (not IP address) for browser camera permissions
-- **Breathing Detection**: System detects chest movements; works best with clear view of torso
-- **Alert Timing**: 10-second threshold is configurable for different use cases
+🛠️ Tech Stack
+Backend
+Python, FastAPI
 
-## 👥 Use Cases
+OpenCV, NumPy
 
-- SIDS (Sudden Infant Death Syndrome) prevention
-- Neonatal intensive care monitoring
-- Home baby monitoring
-- Sleep apnea detection
+TensorFlow
 
-## 📄 License
+Frontend
+React + TypeScript
 
-This project is a prototype for demonstration purposes.
+Vite
 
-## 🙏 Acknowledgments
+Recharts
 
-Built with modern web technologies and computer vision for infant safety monitoring.
+👨‍⚕️👨‍👩‍👧 Use Cases
+NICU monitoring
+
+Early detection of neonatal distress
+
+Parent reassurance via live access
+
+SIDS risk reduction
+
+🎯 Vision
+To build a scalable AI-driven neonatal care platform that improves survival rates while enhancing transparency between hospitals and families.
+
